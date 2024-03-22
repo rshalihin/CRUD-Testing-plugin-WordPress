@@ -1,0 +1,17 @@
+{
+    "name": "mrs/crudtesting",
+    "description": "A test plugin",
+    "authors": [
+        {
+            "name": "Md. Readush Shalihin",
+            "email": "r.shalhin143@gmail.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "MyCrud\\Testing\\": "includes/"
+        },
+        "files": ["includes/functions.php"]
+    }
+}
