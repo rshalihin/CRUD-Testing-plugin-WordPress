@@ -65,14 +65,17 @@ final class CRUD_TEST {
 		if ( ! defined( 'CRUD_VERSION', ) ) {
 			define( 'CRUD_VERSION', '0.1.0' );
 		}
-		if ( ! defined( 'CRUD_DIR' ) ) {
-			define( 'CRUD_DIR', __DIR__ );
+		if ( ! defined( 'CRUD_DIR_PATH' ) ) {
+			define( 'CRUD_DIR_PATH', __DIR__ );
 		}
 		if ( ! defined( 'CRUD_PLUGIN_FILE' ) ) {
 			define( 'CRUD_PLUGIN_FILE', __FILE__ );
 		}
-		if ( ! defined( 'CRUD_PLUGIN_PATH' ) ) {
-			define( 'CRUD_PLUGIN_PATH', plugin_dir_path( CRUD_PLUGIN_FILE ) );
+		if ( ! defined( 'CRUD_PLUGIN_URL' ) ) {
+			define( 'CRUD_PLUGIN_URL', plugin_dir_url( CRUD_PLUGIN_FILE ) );
+		}
+		if ( ! defined( 'CRUD_PLUGIN_ASSET' ) ) {
+			define( 'CRUD_PLUGIN_PATH', CRUD_PLUGIN_URL . 'assets' );
 		}
 	}
 

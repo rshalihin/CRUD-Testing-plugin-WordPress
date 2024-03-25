@@ -23,6 +23,7 @@ class Admin {
 	 */
 	public function dispatch_function( $crud_team_member ) {
 		add_action( 'admin_init', array( $crud_team_member, 'crud_testing_team_members_from_handle' ) );
+		add_action( 'admin_post_crud-info-delete', array( $crud_team_member, 'crud_delete_information' ) );
 	}
 
 }

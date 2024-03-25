@@ -25,25 +25,49 @@ function crud_test_team_member_info_insert( $args = array() ) {
 	$data     = wp_parse_args( $args, $defaults );
 	$prefix   = $wpdb->prefix;
 
-	$inserted = $wpdb->insert(
-		"{$prefix}crud_test_team_members",
-		$data,
-		array(
-			'%s',
-			'%s',
-			'%s',
-			'%s',
-			'%s',
-			'%s',
-			'%d',
-			'%s',
-		)
-	);
+	if ( isset( $data['id'] ) ) {
+		$id = $data['id'];
+		unset( $data['id'] );
 
-	if ( ! $inserted ) {
-		return new \WP_Error( 'failed-to-insert', __( 'Unable to insert data' ) );
+		$updated = $wpdb->update(
+			"{$prefix}crud_test_team_members",
+			$data,
+			array( 'id' => $id ),
+			array(
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%d',
+				'%s',
+			),
+			array( '%d' )
+		);
+		return $updated;
+
+	} else {
+		$inserted = $wpdb->insert(
+			"{$prefix}crud_test_team_members",
+			$data,
+			array(
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%d',
+				'%s',
+			)
+		);
+
+		if ( ! $inserted ) {
+			return new \WP_Error( 'failed-to-insert', __( 'Unable to insert data' ) );
+		}
+		return $inserted;
 	}
-	return $inserted;
 }
 
 /**
@@ -84,5 +108,40 @@ function get_crud_team_members_table_row_count() {
 	global $wpdb;
 	return $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}crud_test_team_members`" );
 }
+
+/**
+ * Get single row team members information.
+ *
+ * @param int $id id of the team member row.
+ * @return object
+ */
+function crud_get_team_members_info( $id ) {
+	global $wpdb;
+	return $wpdb->get_row(
+		$wpdb->prepare(
+			"SELECT * FROM `{$wpdb->prefix}crud_test_team_members`
+            WHERE id = %d",
+			$id
+		)
+	);
+}
+
+/**
+ * Delete Team members information
+ *
+ * @param int $id id of the team member row.
+ * @return object
+ */
+function crud_delete_team_members_info( $id ) {
+	global $wpdb;
+	return $wpdb->delete(
+		"{$wpdb->prefix}crud_test_team_members",
+		array(
+			'id' => $id,
+		),
+		array( '%d' )
+	);
+}
+
 
 

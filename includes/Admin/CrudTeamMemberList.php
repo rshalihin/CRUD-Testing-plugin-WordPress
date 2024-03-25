@@ -56,7 +56,7 @@ class CrudTeamMemberList extends \WP_List_Table {
 	public function get_sortable_columns() {
 		$sortable_columns = array(
 			'name'       => array( 'name', true ),
-			'created_at' => array( 'created_at', true )
+			'created_at' => array( 'created_at', true ),
 		);
 		return $sortable_columns;
 	}
@@ -121,17 +121,23 @@ class CrudTeamMemberList extends \WP_List_Table {
 
 		$action['edit'] = sprintf( '<a href="%1$s" title="%2$s">%3$s</a>', admin_url( 'admin.php?page=crud-team-members&action=edit&id=' . $item->id ), $item->id, __( 'Edit', 'crud-test' ) );
 
-		$action['delete'] = sprintf( '<a href="%s" class="submitdelete" onclick="return confirm(\'Are you sure, you want to delete this\')" title="%s">%s</a>', wp_nonce_url( admin_url( 'admin-post.php?action=crud-delete&id=' . $item->id ), 'crud-delete' ), $item->id, __( 'Delete', 'crud-test' ) );
+		$action['delete'] = sprintf( '<a href="%s" class="submitdelete" onclick="return confirm(\'Are you sure, you want to delete this\')" title="%s">%s</a>', wp_nonce_url( admin_url( 'admin-post.php?action=crud-info-delete&id=' . $item->id ), 'crud-team-member-delete' ), $item->id, __( 'Delete', 'crud-test' ) );
 
-		return sprintf(
+		$item = sprintf(
 			'<a href="%1$s"><strong>%2$s</strong></a>%3$s',
 			admin_url( 'admin.php?page=crud-team-members&action=view&id=' . $item->id ),
 			$item->name,
 			$this->row_actions( $action )
 		);
+		return $item;
 	}
 
-	public function column_cb( $item ) {
+	/**
+	 * Customize column name for checkbox
+	 *
+	 * @return array
+	 */
+	protected function column_cb( $item ) {
 		return sprintf(
 			'<input type="checkbox" name="address_id[]" value="%d" />',
 			$item->id
