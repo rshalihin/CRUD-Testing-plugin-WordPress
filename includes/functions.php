@@ -45,6 +45,7 @@ function crud_test_team_member_info_insert( $args = array() ) {
 			),
 			array( '%d' )
 		);
+		wp_cache_delete( 'crud-team-member-info-' . $id, 'crud-team-member' );
 		return $updated;
 
 	} else {
@@ -117,13 +118,20 @@ function get_crud_team_members_table_row_count() {
  */
 function crud_get_team_members_info( $id ) {
 	global $wpdb;
-	return $wpdb->get_row(
-		$wpdb->prepare(
-			"SELECT * FROM `{$wpdb->prefix}crud_test_team_members`
-            WHERE id = %d",
-			$id
-		)
-	);
+
+	$information = wp_cache_get( 'crud-team-member-info-' . $id, 'crud-team-member' );
+	if ( false === $information ) {
+		$information = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM `{$wpdb->prefix}crud_test_team_members`
+								WHERE id = %d",
+				$id
+			)
+		);
+		wp_cache_set( 'crud-team-member-info-' . $id, $information, 'crud-team-member' );
+	}
+
+	return $information;
 }
 
 /**
