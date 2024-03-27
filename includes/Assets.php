@@ -24,7 +24,12 @@ class Assets {
 		$frontend_scripts = array(
 			'crud-frontend-scripts' => array(
 				'src'     => CRUD_PLUGIN_ASSET . '/js/crud.js',
-				'version' => filemtime( CRUD_DIR_PATH . '/js/crud.js' ),
+				'version' => filemtime( CRUD_DIR_PATH . '/assets/js/crud.js' ),
+				'deps'    => array( 'jquery' ),
+			),
+			'enquiry-script'       => array(
+				'src'     => CRUD_PLUGIN_ASSET . '/js/enquiry.js',
+				'version' => filemtime( CRUD_DIR_PATH . '/assets/js/enquiry.js' ),
 				'deps'    => array( 'jquery' ),
 			),
 		);
@@ -40,7 +45,11 @@ class Assets {
 		$frontend_style = array(
 			'crud-frontend-style' => array(
 				'src'     => CRUD_PLUGIN_ASSET . '/css/crud.css',
-				'version' => filemtime( CRUD_DIR_PATH . '/css/crud.css' ),
+				'version' => filemtime( CRUD_DIR_PATH . '/assets/css/crud.css' ),
+			),
+			'enquiry-style'      => array(
+				'src'     => CRUD_PLUGIN_ASSET . '/css/enquiry.css',
+				'version' => filemtime( CRUD_DIR_PATH . '/assets/css/enquiry.css' ),
 			),
 		);
 		return $frontend_style;
@@ -61,8 +70,16 @@ class Assets {
 		$styles = $this->get_frontend_styles();
 		foreach ( $styles as $handle => $style ) {
 			$deps = isset( $style['deps'] ) ? $style['deps'] : false;
-			wp_register_script( $handle, $style['src'], $deps, $style['version'], 'all' );
+			wp_register_style( $handle, $style['src'], $deps, $style['version'] );
 		}
+		wp_localize_script(
+			'enquiry-script',
+			'crudTestEnquiry',
+			array(
+				'ajaxurl' => admin_url( 'admin-ajax.php' ),
+				'error' => __( 'Something went wrong', 'crud-test' ),
+			)
+		);
 	}
 
 
@@ -75,8 +92,13 @@ class Assets {
 		$backend_scripts = array(
 			'crud-backend-scripts' => array(
 				'src'     => CRUD_PLUGIN_ASSET . '/js/crud-backend.js',
-				'version' => filemtime( CRUD_DIR_PATH . '/js/crud-backend.js' ),
+				'version' => filemtime( CRUD_DIR_PATH . '/assets/js/crud-backend.js' ),
 				'deps'    => array( 'jquery' ),
+			),
+			'crud-admin-scripts' => array(
+				'src'     => CRUD_PLUGIN_ASSET . '/js/admin.js',
+				'version' => filemtime( CRUD_DIR_PATH . '/assets/js/admin.js' ),
+				'deps'    => array( 'jquery', 'wp-util' ),
 			),
 		);
 		return $backend_scripts;
@@ -91,7 +113,7 @@ class Assets {
 		$backend_style = array(
 			'crud-backend-style' => array(
 				'src'     => CRUD_PLUGIN_ASSET . '/css/crud-backend.css',
-				'version' => filemtime( CRUD_DIR_PATH . '/css/crud-backend.css' ),
+				'version' => filemtime( CRUD_DIR_PATH . '/assets/css/crud-backend.css' ),
 			),
 		);
 		return $backend_style;
@@ -112,7 +134,17 @@ class Assets {
 		$styles = $this->get_backend_styles();
 		foreach ( $styles as $handle => $style ) {
 			$deps = isset( $style['deps'] ) ? $style['deps'] : false;
-			wp_register_script( $handle, $style['src'], $deps, $style['version'], 'all' );
+			wp_register_style( $handle, $style['src'], $deps, $style['version'], 'all' );
 		}
+
+		wp_localize_script(
+			'crud-admin-scripts',
+			'crudTestAdmin',
+			array(
+				'nonce'   => wp_create_nonce( 'crud_test_ajax_admin_nonce' ),
+				'confirm' => __( 'Are you sure ?', 'crud-test ' ),
+				'error'   => __( 'Something went wrong', 'crud-test' ),
+			),
+		);
 	}
 }

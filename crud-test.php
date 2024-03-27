@@ -75,7 +75,7 @@ final class CRUD_TEST {
 			define( 'CRUD_PLUGIN_URL', plugin_dir_url( CRUD_PLUGIN_FILE ) );
 		}
 		if ( ! defined( 'CRUD_PLUGIN_ASSET' ) ) {
-			define( 'CRUD_PLUGIN_PATH', CRUD_PLUGIN_URL . 'assets' );
+			define( 'CRUD_PLUGIN_ASSET', CRUD_PLUGIN_URL . 'assets' );
 		}
 	}
 
@@ -94,6 +94,11 @@ final class CRUD_TEST {
 	 * Fire after plugins loaded successfully.
 	 */
 	public function plugins_init() {
+
+		new MyCrud\Testing\Assets();
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			new MyCrud\Testing\Ajax();
+		}
 		if ( is_admin() ) {
 			new MyCrud\Testing\Admin();
 		} else {

@@ -42,6 +42,8 @@ class Menu {
 		$hook = add_menu_page( __( 'Team Members', 'crud-test' ), __( 'CRUD Team', 'crud-test' ), $capability, $parent_slug, array( $this->crud_team_member, 'crud_testing_team_members_page' ), 'dashicons-groups' );
 		add_submenu_page( $parent_slug, __( 'Team Members', 'crud-test' ), __( 'Team Members', 'crud-test' ), $capability, $parent_slug, array( $this->crud_team_member, 'crud_testing_team_members_page' ) );
 		add_submenu_page( $parent_slug, __( 'Crud Settings', 'crud-test' ), __( 'Crud Settings', 'crud-test' ), $capability, 'crud-team-members-settings', array( $this, 'crud_team_members_settings' ) );
+
+		add_action( 'admin_head-' . $hook, array( $this, 'enqueue_admin_asset' ) );
 	}
 
 
@@ -54,5 +56,9 @@ class Menu {
 	 */
 	public function crud_team_members_settings() {
 		echo 'Hello form Crud Settings';
+	}
+
+	public function enqueue_admin_asset() {
+		wp_enqueue_script( 'crud-admin-scripts' );
 	}
 }

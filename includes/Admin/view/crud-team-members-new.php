@@ -77,5 +77,4 @@
 		<?php wp_nonce_field( 'add_team_member_info' ); ?>
 		<?php submit_button( __( 'Add Member Info', 'crud-text' ), 'primary', 'submit_member_info' ); ?>
 	</form>
-	
 </div>

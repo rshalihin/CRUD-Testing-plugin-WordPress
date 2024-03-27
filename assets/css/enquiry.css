@@ -1,0 +1,18 @@
+.form-group {
+    margin:  10px auto;
+    box-sizing: border-box;
+}
+
+label {
+    font-size: 18px;
+    font-weight: 400;
+    width: 100px;
+    display: inline-block;
+}
+
+input, textarea {
+    font-size: 18px;
+    padding: 8px 12px;
+    display: inline-block;
+    width: 300px;
+}
