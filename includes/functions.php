@@ -90,12 +90,11 @@ function get_crud_team_members_info( $args = array() ) {
 		'orderby' => 'id',
 		'order'   => 'ASC',
 	);
-	$args = wp_parse_args( $args, $defaults );
+	$args     = wp_parse_args( $args, $defaults );
 
 	$last_changed = wp_cache_get_last_changed( 'crud-team-member' );
 	$key          = md5( serialize( array_diff_assoc( $args, $defaults ) ) );
 	$cache_key    = "all:$key:$last_changed";
-
 
 		$sql = $wpdb->prepare(
 			"SELECT * FROM `{$wpdb->prefix}crud_test_team_members`
@@ -107,9 +106,9 @@ function get_crud_team_members_info( $args = array() ) {
 
 	$items = wp_cache_get( $cache_key, 'crud-team-member' );
 	if ( false === $items ) {
-        $items = $wpdb->get_results( $sql );
-        wp_cache_set( $cache_key, $items, 'crud-team-member' );
-    }
+		$items = $wpdb->get_results( $sql );
+		wp_cache_set( $cache_key, $items, 'crud-team-member' );
+	}
 	return $items;
 }
 
@@ -145,7 +144,7 @@ function crud_get_team_members_info( $id ) {
 		$information = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM `{$wpdb->prefix}crud_test_team_members`
-								WHERE id = %d",
+				WHERE id = %d",
 				$id
 			)
 		);

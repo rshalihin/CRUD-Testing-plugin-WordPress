@@ -4,6 +4,7 @@ namespace MyCrud\Testing\API;
 
 use WP_REST_Controller;
 use WP_REST_Server;
+use WP_Error;
 
 /**
  * API class handling.
@@ -34,13 +35,43 @@ class Information extends WP_REST_Controller {
 				'schema' => array( $this, 'get_item_schema' ),
 			)
 		);
+
+		/**
+		 * Register API routes for Readable.
+		 */
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<id>[\d]+)',
+			array(
+				'args'   => array(
+					'id' => array(
+						'description' => __( 'Unique identifier for object' ),
+						'type'        => 'integer',
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'get_item_permissions_check' ),
+					'args'                => array(
+						'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_item' ),
+					'permission_callback' => array( $this, 'delete_item_permissions_check' ),
+				),
+				'schema' => array( $this, 'get_item_schema' ),
+			),
+		);
 	}
 
 	/**
 	 * Check if given request has access to read information.
 	 *
 	 * @param \WP_REST_Request $request
-	 * @return \WP_REST_Response
+	 * @return \WP_Error|bool
 	 */
 	public function get_items_permissions_check( $request ) {
 		if ( current_user_can( 'manage_options' ) ) {
@@ -48,6 +79,85 @@ class Information extends WP_REST_Controller {
 		}
 		return false;
 	}
+
+	/**
+	 * Check if given request has access delete specific information.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_Error|bool
+	 */
+	public function delete_item_permissions_check( $request ) {
+		return $this->get_item_permissions_check( $request );
+	}
+
+	/**
+	 *
+	 */
+	public function delete_item( $request ) {
+		$contact  = $this->get_contact( $request['id'] );
+		$previous = $this->prepare_item_for_response( $contact, $request );
+		$delete   = crud_delete_team_members_info( $request['id'] );
+		if ( ! $delete ) {
+			return new WP_Error(
+				'rest_not_deleted',
+				__( 'Sorry, information cannot be deleted.' ),
+				array( 'status' => 400 )
+			);
+		}
+		$data     = array(
+			'deleted'  => true,
+			'previous' => $previous->get_data(),
+		);
+		$response = rest_ensure_response( $data );
+		return $data;
+	}
+
+	/**
+	 * Check if given request has exist.
+	 *
+	 * @param int $id
+	 */
+	protected function get_contact( $id ) {
+		$contact = crud_get_team_members_info( $id );
+		if ( ! $contact ) {
+			return new WP_Error(
+				'rest_contact_invalid_id',
+				__( 'Sorry, Information is not available' ),
+				array( 'status' => 404 ),
+			);
+		}
+		return $contact;
+	}
+
+	/**
+	 * Check if given request has access to read information for single item (Read).
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_REST_Response
+	 */
+	public function get_item_permissions_check( $request ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+		$contact = $this->get_contact( $request['id'] );
+		if ( is_wp_error( $contact ) ) {
+			return $contact;
+		}
+		return true;
+	}
+	/**
+	 * Get information.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_REST_Response|WP_Error
+	 */
+	public function get_item( $request ) {
+		$contact  = $this->get_contact( $request['id'] );
+		$response = $this->prepare_item_for_response( $contact, $request );
+		$response = rest_ensure_response( $response );
+		return $response;
+	}
+
 
 	/**
 	 * Retrieved the list of team members information.
@@ -100,7 +210,7 @@ class Information extends WP_REST_Controller {
 		$fields = $this->get_fields_for_response( $request );
 
 		if ( in_array( 'id', $fields, true ) ) {
-			$data['id'] = $item->id;
+			$data['id'] = (int) $item->id;
 		}
 		if ( in_array( 'name', $fields, true ) ) {
 			$data['name'] = $item->name;
