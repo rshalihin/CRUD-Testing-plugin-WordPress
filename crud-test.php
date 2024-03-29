@@ -104,6 +104,7 @@ final class CRUD_TEST {
 		} else {
 			new MyCrud\Testing\Frontend();
 		}
+		new MyCrud\Testing\API();
 
 	}
 }

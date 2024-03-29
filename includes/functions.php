@@ -45,7 +45,8 @@ function crud_test_team_member_info_insert( $args = array() ) {
 			),
 			array( '%d' )
 		);
-		wp_cache_delete( 'crud-team-member-info-' . $id, 'crud-team-member' );
+		// Delete object cache for single entity.
+		crud_test_team_member_purge_cache( $id );
 		return $updated;
 
 	} else {
@@ -63,6 +64,9 @@ function crud_test_team_member_info_insert( $args = array() ) {
 				'%s',
 			)
 		);
+
+		// Delete object cache for count row.
+		crud_test_team_member_purge_cache();
 
 		if ( ! $inserted ) {
 			return new \WP_Error( 'failed-to-insert', __( 'Unable to insert data' ) );
@@ -86,17 +90,26 @@ function get_crud_team_members_info( $args = array() ) {
 		'orderby' => 'id',
 		'order'   => 'ASC',
 	);
-	$args     = wp_parse_args( $args, $defaults );
+	$args = wp_parse_args( $args, $defaults );
 
-	$items = $wpdb->get_results(
-		$wpdb->prepare(
+	$last_changed = wp_cache_get_last_changed( 'crud-team-member' );
+	$key          = md5( serialize( array_diff_assoc( $args, $defaults ) ) );
+	$cache_key    = "all:$key:$last_changed";
+
+
+		$sql = $wpdb->prepare(
 			"SELECT * FROM `{$wpdb->prefix}crud_test_team_members`
 			ORDER BY {$args['orderby']} {$args['order']}
 			LIMIT %d, %d",
 			$args['offset'],
 			$args['numbers']
-		)
-	);
+		);
+
+	$items = wp_cache_get( $cache_key, 'crud-team-member' );
+	if ( false === $items ) {
+        $items = $wpdb->get_results( $sql );
+        wp_cache_set( $cache_key, $items, 'crud-team-member' );
+    }
 	return $items;
 }
 
@@ -107,7 +120,14 @@ function get_crud_team_members_info( $args = array() ) {
  */
 function get_crud_team_members_table_row_count() {
 	global $wpdb;
-	return $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}crud_test_team_members`" );
+	// Get number of members table rows from cache.
+	$count = wp_cache_get( 'team_members_table_row_count', 'crud-team-member' );
+	// set number of members table rows to cache.
+	if ( $count === false ) {
+		$count = $wpdb->get_var( "SELECT COUNT(*) FROM `{$wpdb->prefix}crud_test_team_members`" );
+		wp_cache_set( 'team_members_table_row_count', $count, 'crud-team-member' );
+	}
+	return $count;
 }
 
 /**
@@ -119,6 +139,7 @@ function get_crud_team_members_table_row_count() {
 function crud_get_team_members_info( $id ) {
 	global $wpdb;
 
+	// set object caching settings for single entry.
 	$information = wp_cache_get( 'crud-team-member-info-' . $id, 'crud-team-member' );
 	if ( false === $information ) {
 		$information = $wpdb->get_row(
@@ -142,6 +163,9 @@ function crud_get_team_members_info( $id ) {
  */
 function crud_delete_team_members_info( $id ) {
 	global $wpdb;
+
+	crud_test_team_member_purge_cache( $id );
+
 	return $wpdb->delete(
 		"{$wpdb->prefix}crud_test_team_members",
 		array(
@@ -149,6 +173,25 @@ function crud_delete_team_members_info( $id ) {
 		),
 		array( '%d' )
 	);
+
+}
+
+/**
+ * Purge the cache for crud-test team members.
+ *
+ * @param int $info_id The ID of the team member.
+ * @return void
+ */
+function crud_test_team_member_purge_cache( $info_id = null ) {
+	$group = 'crud-team-member';
+	if ( $info_id ) {
+		// Delete object cache for single entry.
+		wp_cache_get( 'crud-team-member-info-' . $info_id, 'crud-team-member' );
+	}
+	// Delete object cache for row count.
+	wp_cache_delete( 'team_members_table_row_count', 'crud-team-member' );
+
+	wp_cache_set( 'last_changed', microtime(), $group );
 }
 
 

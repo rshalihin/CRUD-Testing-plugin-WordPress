@@ -1,7 +1,7 @@
 <div class="wrap">
-	<h1 class="wp-heading-inline"><?php _e( 'CRUD Team Members', 'crud-test' ); ?></h1>
+	<h1 class="wp-heading-inline"><?php esc_html_e( 'CRUD Team Members', 'crud-test' ); ?></h1>
 	<a href="<?php echo esc_html( admin_url( 'admin.php?page=crud-team-members&action=new' ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add New CRUD Team Members', 'crud-test' ); ?></a>
-	
+
 	<?php
 	if ( isset( $_GET['inserted'] ) ) {
 		?>

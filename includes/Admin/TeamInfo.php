@@ -22,7 +22,7 @@ class TeamInfo {
 	 */
 	public function crud_testing_team_members_page() {
 
-		$action = isset( $_GET['action'] ) ? $_GET['action'] : 'list';
+		$action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : 'list';
 		$id     = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
 
 		switch ( $action ) {
@@ -106,7 +106,7 @@ class TeamInfo {
 
 		// Check if data is saved or not.
 		if ( is_wp_error( $inserted_id ) ) {
-			wp_die( esc_html__( $inserted_id->get_error_message() ) );
+			wp_die( esc_html( $inserted_id->get_error_message() ) );
 		}
 
 		if ( $id ) {
