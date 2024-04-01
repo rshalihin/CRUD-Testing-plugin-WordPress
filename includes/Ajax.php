@@ -44,17 +44,20 @@ class Ajax {
 	 */
 	public function crud_test_info_delete() {
 
-		// $id = isset( $_REQUEST['id'] ) ? intval( $_REQUEST['id'] ) : 0;
+		$id       = isset( $_REQUEST['id'] ) ? intval( $_REQUEST['id'] ) : 0;
+		$wp_nonce = isset( $_REQUEST['_wpnonce'] ) ? $_REQUEST['_wpnonce'] : '';
 
-		// if ( crud_delete_team_members_info( $id ) ) {
-		// Redirect to the list page.
-		// $redirected_to = admin_url( 'admin.php?page=crud-team-members&crud-info-deleted=true' );
-		// } else {
-		// $redirected_to = admin_url( 'admin.php?page=crud-team-members&crud-info-deleted=false' );
-		// }
-		// wp_safe_redirect( $redirected_to );
-		wp_send_json_success();
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		if ( ! wp_verify_nonce( $wp_nonce, 'crud_test_ajax_admin_nonce' ) ) {
+			die( esc_html__( 'Security check', 'crud-test' ) );
+		}
+
+		if ( crud_delete_team_members_info( $id ) ) {
+			wp_send_json_success();
+		} else {
+			wp_send_json_error();
+		}
 	}
-
-
 }
