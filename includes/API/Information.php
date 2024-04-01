@@ -179,11 +179,11 @@ class Information extends WP_REST_Controller {
 		$args['number'] = $args['per_page'];
 		$args['offset'] = $args['number'] * ( $args['page'] - 1 );
 
-		$data     = array();
-		$contacts = get_crud_team_members_info( $args );
-
 		unset( $args['per_page'] );
 		unset( $args['page'] );
+
+		$data     = array();
+		$contacts = get_crud_team_members_info( $args );
 
 		foreach ( $contacts as $contact ) {
 			$response = $this->prepare_item_for_response( $contact, $request );
@@ -192,10 +192,10 @@ class Information extends WP_REST_Controller {
 		$total    = get_crud_team_members_table_row_count();
 		$max_page = ceil( $total / (int) $args['number'] );
 		$response = rest_ensure_response( $data );
-		$response = header( 'X-WP-Total', (int) $total );
-		$response = header( 'X-WP-TotalPages', (int) $max_page );
+		$response->header( 'X-WP-Total', (int) $total );
+		$response->header( 'X-WP-TotalPages', (int) $max_page );
 
-		return $contacts;
+		return $response;
 	}
 
 	/**
