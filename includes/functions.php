@@ -3,7 +3,7 @@
 /**
  * Insert team members information.
  *
- * @param array $args
+ * @param array $args Array of team members.
  * @return init|\WP_Error
  */
 function crud_test_team_member_info_insert( $args = array() ) {
@@ -71,7 +71,7 @@ function crud_test_team_member_info_insert( $args = array() ) {
 		if ( ! $inserted ) {
 			return new \WP_Error( 'failed-to-insert', __( 'Unable to insert data' ) );
 		}
-		return $inserted;
+		return $wpdb->insert_id;
 	}
 }
 

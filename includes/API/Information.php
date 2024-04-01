@@ -32,6 +32,12 @@ class Information extends WP_REST_Controller {
 					'permission_callback' => array( $this, 'get_items_permissions_check' ),
 					'args'                => $this->get_collection_params(),
 				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_item' ),
+					'permission_callback' => array( $this, 'create_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::CREATABLE ),
+				),
 				'schema' => array( $this, 'get_item_schema' ),
 			)
 		);
@@ -58,6 +64,12 @@ class Information extends WP_REST_Controller {
 					),
 				),
 				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_item' ),
+					'permission_callback' => array( $this, 'update_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( WP_REST_Server::EDITABLE ),
+				),
+				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete_item' ),
 					'permission_callback' => array( $this, 'delete_item_permissions_check' ),
@@ -81,6 +93,107 @@ class Information extends WP_REST_Controller {
 	}
 
 	/**
+	 * Check if given request has access to create information.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_Error|bool
+	 */
+	public function create_item_permissions_check( $request ) {
+		return $this->get_items_permissions_check( $request );
+	}
+
+	/**
+	 * Check if given request has access to update information.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_Error|bool
+	 */
+	public function update_item_permissions_check( $request ) {
+		return $this->get_item_permissions_check( $request );
+	}
+
+	/**
+	 * Update information.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_Error|bool
+	 */
+	public function update_item( $request ) {
+		$contact  = $this->get_contact( $request['id'] );
+		$prepared = $this->prepare_item_for_database( $request );
+		$prepared = array_merge( (array) $contact, $prepared );
+		$updated  = crud_test_team_member_info_insert( $prepared );
+
+		if ( ! $updated ) {
+			return new WP_Error(
+				'rest_update_failed',
+				__( 'Sorry! Something went wrong' ),
+				array( 'status' => 400 )
+			);
+		}
+		$contacts = $this->get_contact( $request['id'] );
+		$response = $this->prepare_item_for_response( $contacts, $request );
+		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Create information.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_Error|array
+	 */
+	public function create_item( $request ) {
+		$contact = $this->prepare_item_for_database( $request );
+		if ( is_wp_error( $contact ) ) {
+			return $contact;
+		}
+		$contact_id = crud_test_team_member_info_insert( $contact );
+		if ( is_wp_error( $contact_id ) ) {
+			$contact_id->add_data( array( 'status' => 400 ) );
+			return $contact_id;
+		}
+
+		$contact = $this->get_contact( (int) $contact_id );
+
+		$response = $this->prepare_item_for_response( $contact, $request );
+		$response->set_status( 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s%s%d', $this->namespace, $this->rest_base, $contact_id ) ) );
+
+		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Prepare item for database.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_Error|array
+	 */
+	protected function prepare_item_for_database( $request ) {
+		$prepare = array();
+
+		if ( isset( $request['name'] ) ) {
+			$prepare['name'] = $request['name'];
+		}
+		if ( isset( $request['designation'] ) ) {
+			$prepare['designation'] = $request['designation'];
+		}
+		if ( isset( $request['email'] ) ) {
+			$prepare['email'] = $request['email'];
+		}
+		if ( isset( $request['phone'] ) ) {
+			$prepare['phone'] = $request['phone'];
+		}
+		if ( isset( $request['address'] ) ) {
+			$prepare['address'] = $request['address'];
+		}
+		if ( isset( $request['bio'] ) ) {
+			$prepare['bio'] = $request['bio'];
+		}
+
+		return $prepare;
+	}
+
+	/**
 	 * Check if given request has access delete specific information.
 	 *
 	 * @param \WP_REST_Request $request
@@ -91,7 +204,7 @@ class Information extends WP_REST_Controller {
 	}
 
 	/**
-	 *
+	 * Item deleted
 	 */
 	public function delete_item( $request ) {
 		$contact  = $this->get_contact( $request['id'] );
@@ -179,6 +292,7 @@ class Information extends WP_REST_Controller {
 		$args['number'] = $args['per_page'];
 		$args['offset'] = $args['number'] * ( $args['page'] - 1 );
 
+		// unset per_page and page.
 		unset( $args['per_page'] );
 		unset( $args['page'] );
 
